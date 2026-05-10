@@ -4,87 +4,133 @@ from anthropic import Anthropic
 client = Anthropic()
 
 st.set_page_config(
-    page_title="Edition Auto Tanger",
+    page_title="Edition Auto Luxury Cars",
     page_icon="🏎️",
     layout="centered"
 )
 
 st.markdown("""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Raleway:wght@300;400&display=swap');
+
     .stApp {
-        background-color: #0a0a0a;
-        background-image: url('https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=1920&q=80');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
+        background: linear-gradient(135deg, #2C2C2C 0%, #1a1a1a 50%, #2C2C2C 100%);
     }
-    .stApp::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.88);
-        z-index: 0;
-    }
+
     .main > div {
         position: relative;
         z-index: 1;
     }
-    h1 {
-        color: #C0C0C0 !important;
+
+    .header-container {
+        background: linear-gradient(180deg, #3a3530 0%, #2a2520 100%);
+        border-bottom: 3px solid #C9A84C;
+        padding: 30px 20px;
         text-align: center;
-        font-family: 'Georgia', serif;
-        font-size: 2.2em !important;
-        letter-spacing: 4px;
-        text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+        margin-bottom: 20px;
+        border-radius: 0 0 15px 15px;
+        box-shadow: 0 4px 20px rgba(201, 168, 76, 0.3);
     }
-    .subtitle {
-        color: #C0C0C0;
-        text-align: center;
-        font-style: italic;
-        font-size: 1em;
+
+    .logo-text {
+        font-family: 'Playfair Display', serif;
+        font-size: 3em;
+        font-weight: 700;
+        letter-spacing: 8px;
+        background: linear-gradient(180deg, #FFD700 0%, #C9A84C 40%, #FFD700 60%, #C9A84C 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: none;
+        display: block;
         margin-bottom: 5px;
     }
-    .welcome-box {
-        background: rgba(192, 192, 192, 0.1);
-        border: 1px solid #C0C0C0;
-        border-radius: 10px;
-        padding: 15px;
-        text-align: center;
-        color: #C0C0C0;
-        margin: 10px 0 20px 0;
-        font-size: 0.95em;
+
+    .luxury-text {
+        font-family: 'Raleway', sans-serif;
+        font-size: 1em;
+        letter-spacing: 6px;
+        color: #C9A84C;
+        font-weight: 300;
     }
+
+    .gold-line {
+        width: 100px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #C9A84C, transparent);
+        margin: 10px auto;
+    }
+
+    .welcome-box {
+        background: linear-gradient(135deg, rgba(201, 168, 76, 0.1), rgba(201, 168, 76, 0.05));
+        border: 1px solid rgba(201, 168, 76, 0.4);
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        color: #C9A84C;
+        margin: 10px 0 20px 0;
+        font-family: 'Raleway', sans-serif;
+        font-size: 0.95em;
+        letter-spacing: 1px;
+    }
+
     .info-box {
-        color: #C0C0C0;
+        color: #C9A84C;
         text-align: center;
         font-size: 0.85em;
         opacity: 0.8;
+        font-family: 'Raleway', sans-serif;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+    }
+
+    .stChatMessage {
+        background: linear-gradient(135deg, rgba(42, 37, 32, 0.9), rgba(58, 53, 48, 0.9)) !important;
+        border: 1px solid rgba(201, 168, 76, 0.2) !important;
+        border-radius: 12px !important;
+    }
+
+    .stChatInput textarea {
+        background-color: #2a2520 !important;
+        color: #C9A84C !important;
+        border: 1px solid rgba(201, 168, 76, 0.4) !important;
+        border-radius: 10px !important;
+    }
+
+    hr {
+        border-color: rgba(201, 168, 76, 0.3) !important;
+    }
+
+    p, div {
+        color: #C9A84C;
     }
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("# 🏎️ EDITION AUTO")
-st.markdown('<p class="subtitle">Votre conseiller virtuel exclusif</p>', unsafe_allow_html=True)
-
 st.markdown("""
-<div class="welcome-box">
-    ✨ Bienvenue chez Edition Auto Tanger !<br>
-    Je suis votre conseiller personnel.<br>
-    Posez-moi vos questions en français, darija, anglais ou español.
+<div class="header-container">
+    <span class="logo-text">EDITION AUTO</span>
+    <div class="gold-line"></div>
+    <span class="luxury-text">LUXURY CARS</span>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="info-box">🕐 Tous les jours : 10h00 - 20h00 &nbsp;|&nbsp; 📍 Rue Fes N°140, Tanger &nbsp;|&nbsp; 📞 0661481800</p>', unsafe_allow_html=True)
+st.markdown("""
+<div class="welcome-box">
+    ✦ Bienvenue chez Edition Auto Tanger ✦<br><br>
+    Votre conseiller virtuel exclusif est à votre service.<br>
+    Posez vos questions en français, darija, English ou Español.
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown('<p class="info-box">🕐 Tous les jours : 10h00 — 20h00 &nbsp;✦&nbsp; 📍 Rue Fes N°140, Tanger &nbsp;✦&nbsp; 📞 0661481800</p>', unsafe_allow_html=True)
 
 st.divider()
 
-system_prompt = """Tu es le conseiller virtuel exclusif d'Edition Auto Tanger.
+system_prompt = """Tu es le conseiller virtuel exclusif d'Edition Auto Luxury Cars Tanger.
 
 SHOWROOM :
-- Nom : Edition Auto
+- Nom : Edition Auto Luxury Cars
 - Adresse : Residence Office, Rue Fes N°140, Tanger, Maroc
 - Horaires : Tous les jours 10h00 - 20h00
 - Telephone : 0661481800
@@ -102,10 +148,10 @@ VEHICULES DISPONIBLES :
 - Matriculation : Rabat
 - Entretien : BMW SMEIA Tanger
 - Options principales :
-  * Direction arrière (ultra rare)
+  * Direction arrière ultra rare
   * Suspension Adaptive M
   * Pack Carbone intégral intérieur
-  * Tableau de bord, console et portières carbone
+  * Tableau de bord console et portières carbone
   * Volant M Sport chauffant
   * Jantes M 21 pouces
   * Sièges cuir rouge chauffants ventilés mémoire
@@ -115,7 +161,7 @@ VEHICULES DISPONIBLES :
   * Coffre électrique
   * Head-Up Display
   * Caméra 360 + Park Assist
-  * Apple CarPlay / Android Auto
+  * Apple CarPlay Android Auto
   * Système audio Harman Kardon premium
   * BMW Laser Light
   * Attache remorque électrique
@@ -140,7 +186,7 @@ VEHICULES DISPONIBLES :
 3. Mercedes GLE Coupé 350DE 4MATIC AMG Line Plus 2026
 - Couleur : Noir Obsidienne Métallisé
 - Intérieur : Cuir Rouge Bordeaux
-- Etat : Neuf — 0 km — Importée Allemagne
+- Etat : Neuf 0 km Importée Allemagne
 - Motorisation : Hybride Diesel Rechargeable
 - Puissance : 333 ch
 - Boite : 9G-TRONIC automatique
@@ -158,7 +204,6 @@ VEHICULES DISPONIBLES :
   * Volant AMG Nappa chauffant
   * Toit panoramique Full Glass
   * Climatisation 4 zones
-  * Éclairage ambiance LED multicolore
   * Double écran HD MBUX 2026
   * Navigation réalité augmentée
   * Apple CarPlay Android Auto sans fil
@@ -173,7 +218,7 @@ VEHICULES DISPONIBLES :
 4. Audi Q3 2026 S Line Diesel Full Options
 - Couleur : Noir Métallisé
 - Intérieur : Noir Alcantara
-- Etat : Neuf — Importée
+- Etat : Neuf Importée
 - Motorisation : Diesel
 - Boite : S Tronic automatique
 - Options principales :
@@ -190,7 +235,7 @@ VEHICULES DISPONIBLES :
 5. Mercedes GLC 300DE 4MATIC Coupé AMG Line Plus 2026
 - Couleur : Gris Nardo
 - Intérieur : Rouge Sport
-- Etat : Neuf — Importée
+- Etat : Neuf Importée
 - Motorisation : Hybride Diesel Plug-in
 - Transmission : 4MATIC intégrale
 - Options principales :
@@ -209,7 +254,7 @@ SERVICES :
 - Reprise de votre ancien vehicule : OUI
 - Livraison a domicile : OUI
 - Essai routier : Non disponible
-- Financement : Nous contacter pour plus d'infos au 0661481800
+- Financement : Nous contacter pour plus d infos au 0661481800
 
 COMPORTEMENT :
 - Tu parles français, darija, anglais et espagnol automatiquement
@@ -221,10 +266,10 @@ COMPORTEMENT :
 - Maximum 1 emoji par réponse
 - Style conseiller Rolls Royce ou Bentley
 - Ne mentionne jamais que tu es une IA
-- Pour les prix, invite le client à appeler le 0661481800
-- Pour le financement, invite le client à appeler le 0661481800
+- Pour les prix invite le client à appeler le 0661481800
+- Pour le financement invite le client à appeler le 0661481800
 - Mets toujours en valeur l exclusivité et le luxe des véhicules
-- Si le client demande une voiture non disponible, propose les alternatives disponibles
+- Si le client demande une voiture non disponible propose les alternatives disponibles
 """
 
 if "messages" not in st.session_state:
