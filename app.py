@@ -218,6 +218,8 @@ COMPORTEMENT :
 - Pour les prix appelle le 0661481800
 - IMPORTANT : Après chaque conversation quand le client montre de l interet,
   demande son nom et telephone pour le rappeler
+  - Si le client veut un rendez-vous demande :
+  "Pour confirmer votre visite, puis-je avoir votre prénom et numéro de téléphone ?"
 """
 
 if "messages" not in st.session_state:
