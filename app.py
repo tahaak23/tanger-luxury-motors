@@ -12,8 +12,8 @@ def connect_google_sheets():
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive"
     ]
-    creds = Credentials.from_service_account_file(
-        "google-credentials.json",
+    creds = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
         scopes=scope
     )
     client_gs = gspread.authorize(creds)
