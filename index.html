@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edition Auto - Luxury Cars Tanger</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0c97f; font-family: 'Georgia', serif; }
+
+  nav {
+    position: fixed; top: 0; width: 100%; z-index: 100;
+    background: rgba(10,10,10,0.97);
+    border-bottom: 1px solid #c9a84c;
+    padding: 16px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .nav-logo { font-size: 22px; letter-spacing: 6px; color: #c9a84c; font-weight: bold; }
+  .nav-sub { font-size: 10px; letter-spacing: 4px; color: #8a7040; }
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a { color: #c9a84c; text-decoration: none; font-size: 12px; letter-spacing: 2px; font-family: sans-serif; }
+  .nav-btn {
+    background: transparent; border: 1px solid #c9a84c;
+    color: #c9a84c; padding: 10px 24px; font-size: 12px;
+    letter-spacing: 2px; cursor: pointer; font-family: sans-serif;
+  }
+  .nav-btn:hover { background: #c9a84c; color: #0a0a0a; }
+
+  .hero {
+    height: 100vh;
+    background: linear-gradient(180deg, #0a0a0a 0%, #1a1508 50%, #0a0a0a 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding-top: 80px;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+  .hero-badge { font-size: 11px; letter-spacing: 6px; color: #8a7040; font-family: sans-serif; margin-bottom: 24px; }
+  .hero-title { font-size: 80px; letter-spacing: 16px; color: #c9a84c; line-height: 1; margin-bottom: 8px; }
+  .hero-sub { font-size: 16px; letter-spacing: 8px; color: #8a7040; font-family: sans-serif; margin-bottom: 48px; }
+  .gold-line { width: 80px; height: 1px; background: linear-gradient(90deg, transparent, #c9a84c, transparent); margin: 0 auto 48px; }
+  .hero-desc { font-size: 14px; color: #8a7040; letter-spacing: 1px; font-family: sans-serif; margin-bottom: 48px; line-height: 1.8; }
+  .hero-btns { display: flex; gap: 20px; }
+  .btn-gold { background: #c9a84c; color: #0a0a0a; padding: 14px 36px; font-size: 12px; letter-spacing: 3px; border: none; cursor: pointer; font-family: sans-serif; font-weight: bold; }
+  .btn-gold:hover { background: #e0c97f; }
+  .btn-outline { background: transparent; color: #c9a84c; padding: 14px 36px; font-size: 12px; letter-spacing: 3px; border: 1px solid #c9a84c; cursor: pointer; font-family: sans-serif; }
+  .btn-outline:hover { background: #c9a84c; color: #0a0a0a; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid rgba(201,168,76,0.2); }
+  .stat { padding: 40px; text-align: center; border-right: 1px solid rgba(201,168,76,0.2); }
+  .stat:last-child { border-right: none; }
+  .stat-num { font-size: 36px; color: #c9a84c; margin-bottom: 8px; }
+  .stat-label { font-size: 11px; letter-spacing: 3px; color: #8a7040; font-family: sans-serif; }
+
+  .section { padding: 80px 40px; }
+  .section-header { text-align: center; margin-bottom: 60px; }
+  .section-badge { font-size: 11px; letter-spacing: 6px; color: #8a7040; font-family: sans-serif; margin-bottom: 16px; }
+  .section-title { font-size: 36px; letter-spacing: 8px; color: #c9a84c; margin-bottom: 16px; }
+
+  .cars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .car-card { background: #111; border: 1px solid rgba(201,168,76,0.15); overflow: hidden; cursor: pointer; transition: border-color 0.3s; }
+  .car-card:hover { border-color: #c9a84c; }
+  .car-img { height: 220px; display: flex; align-items: center; justify-content: center; font-size: 80px; background: #0d0d0d; border-bottom: 1px solid rgba(201,168,76,0.15); overflow: hidden; }
+  .car-img img { width: 100%; height: 100%; object-fit: cover; }
+  .car-info { padding: 24px; }
+  .car-brand { font-size: 10px; letter-spacing: 4px; color: #8a7040; font-family: sans-serif; margin-bottom: 8px; }
+  .car-name { font-size: 16px; color: #c9a84c; margin-bottom: 12px; letter-spacing: 2px; }
+  .car-details { font-size: 12px; color: #8a7040; font-family: sans-serif; line-height: 2; }
+  .car-badge { display: inline-block; margin-top: 16px; background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3); color: #c9a84c; font-size: 10px; letter-spacing: 2px; padding: 6px 14px; font-family: sans-serif; }
+
+  .services-bg { background: #0d0d0d; border-top: 1px solid rgba(201,168,76,0.2); border-bottom: 1px solid rgba(201,168,76,0.2); }
+  .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .service { padding: 48px 32px; text-align: center; border-right: 1px solid rgba(201,168,76,0.15); }
+  .service:last-child { border-right: none; }
+  .service-icon { font-size: 36px; margin-bottom: 20px; }
+  .service-title { font-size: 13px; letter-spacing: 3px; color: #c9a84c; margin-bottom: 12px; font-family: sans-serif; }
+  .service-desc { font-size: 12px; color: #8a7040; font-family: sans-serif; line-height: 1.8; }
+
+  .contact-section { background: linear-gradient(180deg, #0a0a0a, #1a1508, #0a0a0a); text-align: center; padding: 80px 40px; }
+  .contact-info { display: flex; justify-content: center; gap: 80px; margin: 48px 0; font-family: sans-serif; }
+  .contact-item { text-align: center; }
+  .contact-label { font-size: 10px; letter-spacing: 4px; color: #8a7040; margin-bottom: 12px; }
+  .contact-value { font-size: 18px; color: #c9a84c; }
+
+  .chatbot-float {
+    position: fixed; bottom: 32px; right: 32px;
+    background: #c9a84c; color: #0a0a0a;
+    padding: 16px 28px; font-size: 12px; letter-spacing: 2px;
+    border: none; cursor: pointer; font-family: sans-serif; font-weight: bold;
+    text-decoration: none; display: block;
+    box-shadow: 0 0 40px rgba(201,168,76,0.3);
+  }
+  .chatbot-float:hover { background: #e0c97f; }
+
+  footer { background: #050505; border-top: 1px solid rgba(201,168,76,0.2); padding: 32px 40px; text-align: center; font-size: 11px; letter-spacing: 2px; color: #8a7040; font-family: sans-serif; }
+
+  @media (max-width: 768px) {
+    .hero-title { font-size: 40px; }
+    .cars-grid { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .services-grid { grid-template-columns: repeat(2, 1fr); }
+    .contact-info { flex-direction: column; gap: 32px; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div>
+    <div class="nav-logo">EDITION AUTO</div>
+    <div class="nav-sub">LUXURY CARS · TANGER</div>
+  </div>
+  <div class="nav-links">
+    <a href="#vehicules">VÉHICULES</a>
+    <a href="#services">SERVICES</a>
+    <a href="#contact">CONTACT</a>
+  </div>
+  <button class="nav-btn" onclick="window.open('https://edition-auto.streamlit.app', '_blank')">PARLER À KARIM</button>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">✦ TANGER · MAROC ✦</div>
+  <div class="hero-title">EDITION<br>AUTO</div>
+  <div class="hero-sub">LUXURY CARS</div>
+  <div class="gold-line"></div>
+  <div class="hero-desc">
+    L'excellence automobile au cœur de Tanger.<br>
+    Des véhicules d'exception pour une clientèle d'exception.
+  </div>
+  <div class="hero-btns">
+    <button class="btn-gold" onclick="document.getElementById('vehicules').scrollIntoView({behavior:'smooth'})">DÉCOUVRIR NOS VÉHICULES</button>
+    <button class="btn-outline" onclick="window.open('https://edition-auto.streamlit.app', '_blank')">PARLER À KARIM →</button>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat">
+    <div class="stat-num">9+</div>
+    <div class="stat-label">VÉHICULES DISPONIBLES</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">4</div>
+    <div class="stat-label">MARQUES DE LUXE</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">10H</div>
+    <div class="stat-label">OUVERT TOUS LES JOURS</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">24/7</div>
+    <div class="stat-label">CONSEILLER VIRTUEL</div>
+  </div>
+</div>
+
+<div class="section" id="vehicules">
+  <div class="section-header">
+    <div class="section-badge">✦ NOTRE COLLECTION ✦</div>
+    <div class="section-title">VÉHICULES D'EXCEPTION</div>
+    <div class="gold-line"></div>
+  </div>
+  <div class="cars-grid">
+
+    <div class="car-card">
+      <div class="car-img">🏎️</div>
+      <div class="car-info">
+        <div class="car-brand">BMW</div>
+        <div class="car-name">X5 M50d Pack M 2021</div>
+        <div class="car-details">
+          Noir · 67 000 km<br>
+          400 ch · Diesel Quad-turbo<br>
+          Pack Carbone Intégral · xDrive
+        </div>
+        <div class="car-badge">DISPONIBLE</div>
+      </div>
+    </div>
+
+    <div class="car-card">
+      <div class="car-img">🚗</div>
+      <div class="car-info">
+        <div class="car-brand">MERCEDES-BENZ</div>
+        <div class="car-name">GLE Coupé 350DE AMG 2026</div>
+        <div class="car-details">
+          Noir Obsidienne · 0 km<br>
+          333 ch · Hybride Rechargeable<br>
+          Importée Neuve · Allemagne
+        </div>
+        <div class="car-badge">NEUF · 0 KM</div>
+      </div>
+    </div>
+
+    <div class="car-card">
+      <div class="car-img">🚙</div>
+      <div class="car-info">
+        <div class="car-brand">MERCEDES-BENZ</div>
+        <div class="car-name">GLC 300DE AMG Line+ 2026</div>
+        <div class="car-details">
+          Gris Nardo · Neuf<br>
+          Hybride Plug-in · 4MATIC<br>
+          Pack Carbone Luxe
+        </div>
+        <div class="car-badge">NEUF</div>
+      </div>
+    </div>
+
+    <div class="car-card">
+      <div class="car-img">🚘</div>
+      <div class="car-info">
+        <div class="car-brand">AUDI</div>
+        <div class="car-name">Q3 2026 S Line Diesel</div>
+        <div class="car-details">
+          Noir Métallisé · Neuf<br>
+          Diesel · S Tronic<br>
+          Intérieur Alcantara
+        </div>
+        <div class="car-badge">NEUF</div>
+      </div>
+    </div>
+
+    <div class="car-card">
+      <div class="car-img">🌊</div>
+      <div class="car-info">
+        <div class="car-brand">YAMAHA</div>
+        <div class="car-name">FX SVHO Limited 2026</div>
+        <div class="car-details">
+          Noir Mat · Neuf<br>
+          1.8L Supercharged<br>
+          Édition Limitée + Remorque
+        </div>
+        <div class="car-badge">ÉDITION LIMITÉE</div>
+      </div>
+    </div>
+
+    <div class="car-card" onclick="window.open('https://edition-auto.streamlit.app', '_blank')" style="cursor:pointer;">
+      <div class="car-img" style="font-size:40px; color:#c9a84c;">✦</div>
+      <div class="car-info">
+        <div class="car-brand">PLUS DE VÉHICULES</div>
+        <div class="car-name">Découvrez Notre Collection</div>
+        <div class="car-details">
+          Contactez notre conseiller<br>
+          virtuel Karim pour découvrir<br>
+          tous nos véhicules disponibles
+        </div>
+        <div class="car-badge">PARLER À KARIM →</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="services-bg section" id="services">
+  <div class="section-header">
+    <div class="section-badge">✦ NOS SERVICES ✦</div>
+    <div class="section-title">L'EXCELLENCE À VOTRE SERVICE</div>
+    <div class="gold-line"></div>
+  </div>
+  <div class="services-grid">
+    <div class="service">
+      <div class="service-icon">🔄</div>
+      <div class="service-title">REPRISE</div>
+      <div class="service-desc">Nous reprenons votre véhicule actuel au meilleur prix du marché</div>
+    </div>
+    <div class="service">
+      <div class="service-icon">🚚</div>
+      <div class="service-title">LIVRAISON</div>
+      <div class="service-desc">Livraison à domicile disponible partout au Maroc</div>
+    </div>
+    <div class="service">
+      <div class="service-icon">💳</div>
+      <div class="service-title">FINANCEMENT</div>
+      <div class="service-desc">Solutions de financement personnalisées selon vos besoins</div>
+    </div>
+    <div class="service">
+      <div class="service-icon">🤖</div>
+      <div class="service-title">KARIM 24/7</div>
+      <div class="service-desc">Votre conseiller virtuel disponible à toute heure en 4 langues</div>
+    </div>
+  </div>
+</div>
+
+<div class="contact-section" id="contact">
+  <div class="section-badge">✦ NOUS TROUVER ✦</div>
+  <div class="section-title" style="font-size:36px; letter-spacing:8px; color:#c9a84c; margin:16px 0;">VISITEZ-NOUS</div>
+  <div class="gold-line"></div>
+  <div class="contact-info">
+    <div class="contact-item">
+      <div class="contact-label">ADRESSE</div>
+      <div class="contact-value">Rue Fes N°140, Tanger</div>
+    </div>
+    <div class="contact-item">
+      <div class="contact-label">HORAIRES</div>
+      <div class="contact-value">Tous les jours · 10h — 20h</div>
+    </div>
+    <div class="contact-item">
+      <div class="contact-label">TÉLÉPHONE</div>
+      <div class="contact-value">0661 48 18 00</div>
+    </div>
+  </div>
+  <button class="btn-gold" onclick="window.open('https://edition-auto.streamlit.app', '_blank')">
+    PARLER À NOTRE CONSEILLER KARIM →
+  </button>
+</div>
+
+<a href="https://edition-auto.streamlit.app" target="_blank" class="chatbot-float">
+  💬 KARIM — CONSEILLER VIRTUEL
+</a>
+
+<footer>
+  © 2026 EDITION AUTO LUXURY CARS · RUE FES N°140, TANGER, MAROC · 0661 48 18 00
+</footer>
+
+</body>
+</html>
