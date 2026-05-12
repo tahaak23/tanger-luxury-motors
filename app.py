@@ -3,10 +3,10 @@ from anthropic import Anthropic
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
+import re
 
 client = Anthropic()
 
-# Google Sheets connection
 def connect_google_sheets():
     scope = [
         "https://spreadsheets.google.com/feeds",
@@ -17,7 +17,7 @@ def connect_google_sheets():
         scopes=scope
     )
     client_gs = gspread.authorize(creds)
-    sheet = client_gs.open("Edition Auto — Leads").sheet1
+    sheet = client_gs.open("Edition Auto-- Rendez-vous").sheet1
     return sheet
 
 def save_lead(nom, telephone, vehicule, message, langue):
@@ -37,14 +37,10 @@ st.set_page_config(
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Raleway:wght@300;400&display=swap');
-
     .stApp {
         background: linear-gradient(135deg, #2C2C2C 0%, #1a1a1a 50%, #2C2C2C 100%);
     }
-    .main > div {
-        position: relative;
-        z-index: 1;
-    }
+    .main > div { position: relative; z-index: 1; }
     .header-container {
         background: linear-gradient(180deg, #3a3530 0%, #2a2520 100%);
         border-bottom: 3px solid #C9A84C;
@@ -113,21 +109,21 @@ st.markdown("""
 
 st.markdown("""
 <div class="welcome-box">
-    ✦ Bienvenue chez Edition Auto Tanger ✦<br><br>
-    Votre conseiller virtuel exclusif est à votre service.<br>
-    Posez vos questions en français, darija, English ou Español.
+    Bienvenue chez Edition Auto Tanger<br><br>
+    Votre conseiller virtuel exclusif est a votre service.<br>
+    Posez vos questions en francais, darija, English ou Espanol.
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="info-box">🕐 Tous les jours : 10h00 — 20h00 &nbsp;✦&nbsp; 📍 Rue Fes N°140, Tanger &nbsp;✦&nbsp; 📞 0661481800</p>', unsafe_allow_html=True)
+st.markdown('<p class="info-box">Tous les jours : 10h00 - 20h00 | Rue Fes N140, Tanger | 0661481800</p>', unsafe_allow_html=True)
 
 st.divider()
 
-system_prompt = """Tu es le conseiller virtuel exclusif d'Edition Auto Luxury Cars Tanger.
+system_prompt = """Tu es le conseiller virtuel exclusif d Edition Auto Luxury Cars Tanger.
 
 SHOWROOM :
 - Nom : Edition Auto Luxury Cars
-- Adresse : Residence Office, Rue Fes N°140, Tanger, Maroc
+- Adresse : Residence Office, Rue Fes N140, Tanger, Maroc
 - Horaires : Tous les jours 10h00 - 20h00
 - Telephone : 0661481800
 
@@ -140,89 +136,67 @@ VEHICULES DISPONIBLES :
 - Carburant : Diesel Quad-turbo
 - Puissance : 400 ch
 - Boite : Automatique Steptronic 8 rapports
-- Transmission : xDrive intégrale
-- Matriculation : Rabat
-- Entretien : BMW SMEIA Tanger
-- Options principales :
-  * Direction arrière ultra rare
-  * Suspension Adaptive M
-  * Pack Carbone intégral intérieur
-  * Volant M Sport chauffant
-  * Jantes M 21 pouces
-  * Sièges cuir rouge chauffants ventilés mémoire
-  * Toit panoramique Sky Lounge LED
-  * Head-Up Display
-  * Caméra 360 + Park Assist
-  * Apple CarPlay Android Auto
-  * Système audio Harman Kardon premium
+- Transmission : xDrive integrale
+- Options : Direction arriere ultra rare, Suspension Adaptive M, Pack Carbone integral, Volant M Sport chauffant, Jantes M 21 pouces, Sieges cuir rouge chauffants ventiles memoire, Toit panoramique Sky Lounge LED, Head-Up Display, Camera 360 + Park Assist, Apple CarPlay Android Auto, Harman Kardon premium
 
 2. Yamaha FX SVHO Limited 2026 - Jet Ski
 - Couleur : Noir Mat
 - Etat : Neuf
 - Moteur : 1.8L Supercharged
-- Options : Écran digital, Audio Yamaha, Cruise Control,
-  Modes Eco/Sport, Marche arrière électronique,
-  Clé intelligente, Remorque incluse
+- Options : Ecran digital, Audio Yamaha, Cruise Control, Modes Eco/Sport, Marche arriere electrique, Cle intelligente, Remorque incluse
 
-3. Mercedes GLE Coupé 350DE 4MATIC AMG Line Plus 2026
-- Couleur : Noir Obsidienne Métallisé
-- Intérieur : Cuir Rouge Bordeaux
-- Etat : Neuf 0 km Importée Allemagne
+3. Mercedes GLE Coupe 350DE 4MATIC AMG Line Plus 2026
+- Couleur : Noir Obsidienne Metallise
+- Interieur : Cuir Rouge Bordeaux
+- Etat : Neuf 0 km Importee Allemagne
 - Motorisation : Hybride Diesel Rechargeable 333 ch
 - Boite : 9G-TRONIC automatique
-- Options : Pack AMG Line Plus, Jantes AMG 22 pouces,
-  Digital Light, Burmester 3D, Caméra 360,
-  Hey Mercedes, Suspension AIRMATIC, DISTRONIC PLUS
+- Options : Pack AMG Line Plus, Jantes AMG 22 pouces, Digital Light, Burmester 3D, Camera 360, Hey Mercedes, Suspension AIRMATIC, DISTRONIC PLUS
 
 4. Audi Q3 2026 S Line Diesel Full Options
-- Couleur : Noir Métallisé
-- Intérieur : Noir Alcantara
-- Etat : Neuf Importée
-- Options : Virtual Cockpit, MMI, Toit panoramique,
-  LED Matrix, Climatisation multi-zones
+- Couleur : Noir Metallise
+- Interieur : Noir Alcantara
+- Etat : Neuf Importee
+- Options : Virtual Cockpit, MMI, Toit panoramique, LED Matrix, Climatisation multi-zones
 
-5. Mercedes GLC 300DE 4MATIC Coupé AMG Line Plus 2026
+5. Mercedes GLC 300DE 4MATIC Coupe AMG Line Plus 2026
 - Couleur : Gris Nardo
-- Intérieur : Rouge Sport
-- Etat : Neuf Importée
-- Options : Pack Carbone, MBUX, Sièges Sport AMG,
-  Caméra 360, Burmester, Multibeam LED
+- Interieur : Rouge Sport
+- Etat : Neuf Importee
+- Options : Pack Carbone, MBUX, Sieges Sport AMG, Camera 360, Burmester, Multibeam LED
 
 SERVICES :
 - Reprise vehicule : OUI
 - Livraison domicile : OUI
 - Essai routier : Non disponible
 - Financement : Appeler le 0661481800
+
 COMPORTEMENT :
-- REGLE NUMERO 1 ABSOLUE : Si le client utilise UN SEUL mot darija comme bghit, salam, wash, 3andkom, chhal, kifach, nta, hna, daba, mzyan, wakha, kayn, aji, bzzaf, wach, ndir, nchof — REPONDS UNIQUEMENT EN DARIJA. JAMAIS en français. DARIJA SEULEMENT.
-- Si français réponds en français
-- Si anglais réponds en anglais  
-- Si espagnol réponds en espagnol
-- Tu es toujours élégant et ultra professionnel
+- REGLE NUMERO 1 ABSOLUE : Si le client utilise UN SEUL mot darija comme bghit, salam, wash, 3andkom, chhal, kifach, nta, hna, daba, mzyan, wakha, kayn, aji, bzzaf, wach, ndir, nchof REPONDS UNIQUEMENT EN DARIJA. JAMAIS en francais. DARIJA SEULEMENT.
+- Si francais reponds en francais
+- Si anglais reponds en anglais
+- Si espagnol reponds en espagnol
+- Tu es toujours elegant et ultra professionnel
 - Tu appelles toujours le client Monsieur ou Madame
 - Jamais de langage familier
-- Maximum 1 emoji par réponse
+- Maximum 1 emoji par reponse
 - Ne mentionne jamais que tu es une IA
 - Pour les prix appelle le 0661481800
 - Style conseiller Rolls Royce ou Bentley
-- REGLE NUMERO 2 ABSOLUE : Quand le client montre de l interet pour un vehicule, tu dois OBLIGATOIREMENT demander :
-  "Pour confirmer votre visite, puis-je avoir votre prénom et numéro de téléphone ?"
-- Après avoir reçu le prénom et numéro dis :
-  "Parfait ! Notre équipe va vous contacter très prochainement. Le véhicule vous attend au showroom Rue Fes N°140, Tanger."
-- Pour inviter au showroom dis toujours :
-  "Le véhicule est disponible dans notre showroom au Rue Fes N°140, Tanger. Venez le découvrir en personne !"
+- REGLE NUMERO 2 ABSOLUE : Quand le client montre de l interet pour un vehicule demande OBLIGATOIREMENT : Pour confirmer votre visite, puis-je avoir votre prenom et numero de telephone ?
+- Apres avoir recu prenom et telephone dis : Parfait ! Notre equipe va vous contacter tres prochainement. Le vehicule vous attend au showroom Rue Fes N140, Tanger.
+- Pour inviter au showroom dis : Le vehicule est disponible dans notre showroom au Rue Fes N140, Tanger. Venez le decouvrir en personne !
 - Ne jamais demander si le client est disponible
+"""
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "lead_saved" not in st.session_state:
-    st.session_state.lead_saved = False
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("Écrivez votre message en français, darija, English ou Español..."):
+if prompt := st.chat_input("Ecrivez votre message en francais, darija, English ou Espanol..."):
     st.session_state.messages.append({
         "role": "user",
         "content": prompt
@@ -246,41 +220,39 @@ if prompt := st.chat_input("Écrivez votre message en français, darija, English
     with st.chat_message("assistant"):
         st.markdown(reply)
 
- # Sauvegarde automatique dans Google Sheets
-        import re
-        try:
-            prompt_str = str(prompt) if prompt else ""
-            phone_pattern = r'(0[5-7][0-9]{8})'
-            phone_found = re.search(phone_pattern, prompt_str)
+    try:
+        prompt_str = str(prompt) if prompt else ""
+        phone_pattern = r'(0[5-7][0-9]{8})'
+        phone_found = re.search(phone_pattern, prompt_str)
 
-            if phone_found:
-                telephone = phone_found.group()
-                
-                langue = "Français"
-                if any(word in prompt_str.lower() for word in ["salam", "wash", "bghit", "chhal", "kifach", "nta", "3andkom"]):
-                    langue = "Darija"
-                elif any(word in prompt_str.lower() for word in ["hello", "hi", "what", "how"]):
-                    langue = "Anglais"
-                elif any(word in prompt_str.lower() for word in ["hola", "que", "como"]):
-                    langue = "Espagnol"
+        if phone_found:
+            telephone = phone_found.group()
 
-                vehicule = "Non spécifié"
-                vehicules = ["BMW", "Mercedes", "Audi", "GLE", "GLC", "Q3", "Q8", "X5", "Yamaha", "G63"]
-                for v in vehicules:
-                    for msg in st.session_state.messages:
-                        if v.lower() in str(msg["content"]).lower():
-                            vehicule = v
-                            break
+            langue = "Francais"
+            if any(word in prompt_str.lower() for word in ["salam", "wash", "bghit", "chhal", "kifach", "nta", "3andkom"]):
+                langue = "Darija"
+            elif any(word in prompt_str.lower() for word in ["hello", "hi", "what", "how"]):
+                langue = "Anglais"
+            elif any(word in prompt_str.lower() for word in ["hola", "que", "como"]):
+                langue = "Espagnol"
 
-                nom = "Client Web"
+            vehicule = "Non specifie"
+            vehicules = ["BMW", "Mercedes", "Audi", "GLE", "GLC", "Q3", "Q8", "X5", "Yamaha", "G63"]
+            for v in vehicules:
                 for msg in st.session_state.messages:
-                    if msg["role"] == "user":
-                        content = str(msg["content"])
-                        if len(content.split()) <= 3 and not re.search(phone_pattern, content):
-                            nom = content
-                            break
+                    if v.lower() in str(msg["content"]).lower():
+                        vehicule = v
+                        break
 
-                save_lead(nom, telephone, vehicule, prompt_str, langue)
+            nom = "Client Web"
+            for msg in st.session_state.messages:
+                if msg["role"] == "user":
+                    content = str(msg["content"])
+                    if len(content.split()) <= 3 and not re.search(phone_pattern, content):
+                        nom = content
+                        break
 
-        except Exception as e:
-            print(f"Erreur sauvegarde: {e}")
+            save_lead(nom, telephone, vehicule, prompt_str, langue)
+
+    except Exception as e:
+        print(f"Erreur sauvegarde: {e}")
