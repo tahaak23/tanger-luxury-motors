@@ -255,32 +255,36 @@ if prompt := st.chat_input("Écrivez votre message en français, darija, English
     with st.chat_message("assistant"):
         st.markdown(reply)
 
-    # Sauvegarde automatique dans Google Sheets
-    if not st.session_state.lead_saved:
-        conversation_text = " | ".join([m["content"] for m in st.session_state.messages[-4:]])
-        
-        # Détection langue
-        langue = "Français"
-        if any(word in prompt.lower() for word in ["salam", "wash", "bghit", "chhal", "kifach", "nta"]):
-            langue = "Darija"
-        elif any(word in prompt.lower() for word in ["hello", "hi", "what", "how"]):
-            langue = "Anglais"
-        elif any(word in prompt.lower() for word in ["hola", "que", "como"]):
-            langue = "Espagnol"
+    ## Sauvegarde automatique dans Google Sheets
+import re
 
-        # Détection véhicule mentionné
-        vehicule = "Non spécifié"
-        vehicules = ["BMW", "Mercedes", "Audi", "GLE", "GLC", "Q3", "Q8", "X5", "Yamaha", "Jet Ski", "G63"]
-        for v in vehicules:
-            if v.lower() in prompt.lower() or v.lower() in reply.lower():
+phone_pattern = r'(0[5-7]\d{8}|\+212\d{9}|\d{10})'
+phone_found = re.search(phone_pattern, prompt)
+
+if phone_found:
+    telephone = phone_found.group()
+    
+    langue = "Français"
+    if any(word in prompt.lower() for word in ["salam", "wash", "bghit", "chhal", "kifach", "nta", "3andkom"]):
+        langue = "Darija"
+    elif any(word in prompt.lower() for word in ["hello", "hi", "what", "how"]):
+        langue = "Anglais"
+    elif any(word in prompt.lower() for word in ["hola", "que", "como"]):
+        langue = "Espagnol"
+
+    vehicule = "Non spécifié"
+    vehicules = ["BMW", "Mercedes", "Audi", "GLE", "GLC", "Q3", "Q8", "X5", "Yamaha", "Jet Ski", "G63"]
+    for v in vehicules:
+        for msg in st.session_state.messages:
+            if v.lower() in msg["content"].lower():
                 vehicule = v
                 break
 
-        save_lead(
-            nom="Client Web",
-            telephone="À collecter",
-            vehicule=vehicule,
-            message=prompt,
-            langue=langue
-        )
-        st.session_state.lead_saved = True
+    nom = "Client Web"
+    for msg in st.session_state.messages:
+        if msg["role"] == "user" and len(msg["content"].split()) <= 3:
+            if not re.search(phone_pattern, msg["content"]):
+                nom = msg["content"]
+                break
+
+    save_lead(nom, telephone, vehicule, prompt, langue)
