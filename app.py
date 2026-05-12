@@ -255,41 +255,41 @@ if prompt := st.chat_input("Écrivez votre message en français, darija, English
     with st.chat_message("assistant"):
         st.markdown(reply)
 
-  # Sauvegarde automatique dans Google Sheets
-import re
+ # Sauvegarde automatique dans Google Sheets
+        import re
+        try:
+            prompt_str = str(prompt) if prompt else ""
+            phone_pattern = r'(0[5-7][0-9]{8})'
+            phone_found = re.search(phone_pattern, prompt_str)
 
-try:
-   phone_pattern = r'(0[5-7][0-9]{8})'
-phone_found = re.search(phone_pattern, str(prompt) if prompt else "")
+            if phone_found:
+                telephone = phone_found.group()
+                
+                langue = "Français"
+                if any(word in prompt_str.lower() for word in ["salam", "wash", "bghit", "chhal", "kifach", "nta", "3andkom"]):
+                    langue = "Darija"
+                elif any(word in prompt_str.lower() for word in ["hello", "hi", "what", "how"]):
+                    langue = "Anglais"
+                elif any(word in prompt_str.lower() for word in ["hola", "que", "como"]):
+                    langue = "Espagnol"
 
-    if phone_found:
-        telephone = phone_found.group()
-        
-        langue = "Français"
-        if any(word in str(prompt).lower() for word in ["salam", "wash", "bghit", "chhal", "kifach", "nta", "3andkom"]):
-            langue = "Darija"
-        elif any(word in str(prompt).lower() for word in ["hello", "hi", "what", "how"]):
-            langue = "Anglais"
-        elif any(word in str(prompt).lower() for word in ["hola", "que", "como"]):
-            langue = "Espagnol"
+                vehicule = "Non spécifié"
+                vehicules = ["BMW", "Mercedes", "Audi", "GLE", "GLC", "Q3", "Q8", "X5", "Yamaha", "G63"]
+                for v in vehicules:
+                    for msg in st.session_state.messages:
+                        if v.lower() in str(msg["content"]).lower():
+                            vehicule = v
+                            break
 
-        vehicule = "Non spécifié"
-        vehicules = ["BMW", "Mercedes", "Audi", "GLE", "GLC", "Q3", "Q8", "X5", "Yamaha", "G63"]
-        for v in vehicules:
-            for msg in st.session_state.messages:
-                if v.lower() in str(msg["content"]).lower():
-                    vehicule = v
-                    break
+                nom = "Client Web"
+                for msg in st.session_state.messages:
+                    if msg["role"] == "user":
+                        content = str(msg["content"])
+                        if len(content.split()) <= 3 and not re.search(phone_pattern, content):
+                            nom = content
+                            break
 
-        nom = "Client Web"
-        for msg in st.session_state.messages:
-            if msg["role"] == "user":
-                content = str(msg["content"])
-                if len(content.split()) <= 3 and not re.search(phone_pattern, content):
-                    nom = content
-                    break
+                save_lead(nom, telephone, vehicule, prompt_str, langue)
 
-        save_lead(nom, telephone, vehicule, str(prompt), langue)
-
-except Exception as e:
-    print(f"Erreur sauvegarde: {e}")
+        except Exception as e:
+            print(f"Erreur sauvegarde: {e}")
