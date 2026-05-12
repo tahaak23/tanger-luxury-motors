@@ -259,8 +259,8 @@ if prompt := st.chat_input("Écrivez votre message en français, darija, English
 import re
 
 try:
-    phone_pattern = r'(0[5-7][0-9]{8})'
-    phone_found = re.search(phone_pattern, str(prompt))
+   phone_pattern = r'(0[5-7][0-9]{8})'
+phone_found = re.search(phone_pattern, str(prompt) if prompt else "")
 
     if phone_found:
         telephone = phone_found.group()
