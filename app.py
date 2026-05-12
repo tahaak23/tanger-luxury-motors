@@ -3,30 +3,41 @@ from anthropic import Anthropic
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
+from pathlib import Path
 import re
 
 client = Anthropic()
+
+SHEET_ID = "1EbuzvV8YoNqB-OvbWCaxlrMIlSQzWe31Ig5HTP76DpI"
+LOCAL_CREDS_PATH = Path(__file__).parent / "google-credentials.json"
 
 def connect_google_sheets():
     scope = [
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive"
     ]
-    creds = Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"],
-        scopes=scope
-    )
+    if "gcp_service_account" in st.secrets:
+        creds = Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"],
+            scopes=scope
+        )
+    elif LOCAL_CREDS_PATH.exists():
+        creds = Credentials.from_service_account_file(
+            str(LOCAL_CREDS_PATH),
+            scopes=scope
+        )
+    else:
+        raise FileNotFoundError(
+            "Aucune credential trouvée : configure st.secrets['gcp_service_account'] "
+            "ou place google-credentials.json à la racine."
+        )
     client_gs = gspread.authorize(creds)
-    sheet = client_gs.open("Edition Auto-- Rendez-vous").sheet1
-    return sheet
+    return client_gs.open_by_key(SHEET_ID).sheet1
 
 def save_lead(nom, telephone, vehicule, message, langue):
-    try:
-        sheet = connect_google_sheets()
-        date = datetime.now().strftime("%d/%m/%Y %H:%M")
-        sheet.append_row([date, nom, telephone, vehicule, message, langue, "Nouveau"])
-    except Exception as e:
-        print(f"Erreur Google Sheets: {e}")
+    sheet = connect_google_sheets()
+    date = datetime.now().strftime("%d/%m/%Y %H:%M")
+    sheet.append_row([date, nom, telephone, vehicule, message, langue, "Nouveau"])
 
 st.set_page_config(
     page_title="Edition Auto Luxury Cars",
@@ -220,39 +231,50 @@ if prompt := st.chat_input("Ecrivez votre message en francais, darija, English o
     with st.chat_message("assistant"):
         st.markdown(reply)
 
-    try:
-        prompt_str = str(prompt) if prompt else ""
-        phone_pattern = r'(0[5-7][0-9]{8})'
-        phone_found = re.search(phone_pattern, prompt_str)
+    prompt_str = str(prompt) if prompt else ""
+    phone_pattern = r'(0[5-7][0-9]{8})'
+    phone_digits_only = re.sub(r'[\s.\-]', '', prompt_str)
+    phone_found = re.search(phone_pattern, phone_digits_only)
 
-        if phone_found:
-            telephone = phone_found.group()
+    if phone_found:
+        telephone = phone_found.group()
 
-            langue = "Francais"
-            if any(word in prompt_str.lower() for word in ["salam", "wash", "bghit", "chhal", "kifach", "nta", "3andkom"]):
-                langue = "Darija"
-            elif any(word in prompt_str.lower() for word in ["hello", "hi", "what", "how"]):
-                langue = "Anglais"
-            elif any(word in prompt_str.lower() for word in ["hola", "que", "como"]):
-                langue = "Espagnol"
+        prompt_lower = prompt_str.lower()
+        langue = "Francais"
+        if any(word in prompt_lower for word in ["salam", "wash", "bghit", "chhal", "kifach", "nta", "3andkom"]):
+            langue = "Darija"
+        elif any(word in prompt_lower for word in ["hello", "hi", "what", "how"]):
+            langue = "Anglais"
+        elif any(word in prompt_lower for word in ["hola", "que", "como"]):
+            langue = "Espagnol"
 
-            vehicule = "Non specifie"
-            vehicules = ["BMW", "Mercedes", "Audi", "GLE", "GLC", "Q3", "Q8", "X5", "Yamaha", "G63"]
+        vehicule = "Non specifie"
+        vehicules = ["BMW", "Mercedes", "Audi", "GLE", "GLC", "Q3", "Q8", "X5", "Yamaha", "G63"]
+        for msg in st.session_state.messages:
+            content_lower = str(msg["content"]).lower()
             for v in vehicules:
-                for msg in st.session_state.messages:
-                    if v.lower() in str(msg["content"]).lower():
-                        vehicule = v
-                        break
+                if v.lower() in content_lower:
+                    vehicule = v
+                    break
+            if vehicule != "Non specifie":
+                break
 
-            nom = "Client Web"
-            for msg in st.session_state.messages:
-                if msg["role"] == "user":
-                    content = str(msg["content"])
-                    if len(content.split()) <= 3 and not re.search(phone_pattern, content):
-                        nom = content
-                        break
+        mots_a_ignorer = {"salam", "bonjour", "hello", "hola", "salut", "hi", "bghit",
+                          "wash", "oui", "non", "ok", "merci", "thanks"}
+        nom = "Client Web"
+        for msg in st.session_state.messages:
+            if msg["role"] != "user":
+                continue
+            content = str(msg["content"]).strip()
+            if re.search(phone_pattern, re.sub(r'[\s.\-]', '', content)):
+                continue
+            mots = content.split()
+            if 1 <= len(mots) <= 3 and not any(m.lower().strip(",.!?") in mots_a_ignorer for m in mots):
+                nom = content
+                break
 
+        try:
             save_lead(nom, telephone, vehicule, prompt_str, langue)
-
-    except Exception as e:
-        print(f"Erreur sauvegarde: {e}")
+            st.toast("Vos coordonnées ont bien été enregistrées.", icon="✅")
+        except Exception as e:
+            st.error(f"Erreur sauvegarde Google Sheets : {e}")
