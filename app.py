@@ -39,6 +39,45 @@ def save_lead(nom, telephone, vehicule, message, langue):
     date = datetime.now().strftime("%d/%m/%Y %H:%M")
     sheet.append_row([date, nom, telephone, vehicule, message, langue, "Nouveau"])
 
+PHONE_PATTERN = r'(0[5-7][0-9]{8})'
+PHONE_WITH_SEPARATORS = r"0[\s.\-]?[5-7](?:[\s.\-]?\d){8}"
+
+NOM_INTRO_PATTERNS = [
+    r"je\s+m['’]?appelle\s+([a-zà-ÿ]+(?:-[a-zà-ÿ]+)?)",
+    r"je\s+suis\s+([a-zà-ÿ]+(?:-[a-zà-ÿ]+)?)",
+    r"moi\s+c['’]?est\s+([a-zà-ÿ]+(?:-[a-zà-ÿ]+)?)",
+    r"mon\s+(?:prenom|prénom|nom)\s+(?:est|c['’]?est)\s+([a-zà-ÿ]+(?:-[a-zà-ÿ]+)?)",
+    r"appelez[- ]moi\s+([a-zà-ÿ]+)",
+    r"(?:ana\s+)?smiti\s+([a-zà-ÿ]+)",
+    r"(?:ana\s+)?ismi\s+([a-zà-ÿ]+)",
+    r"my\s+name\s+is\s+([a-zà-ÿ]+(?:\s+[a-zà-ÿ]+)?)",
+    r"i['’]?m\s+([a-zà-ÿ]+)",
+    r"me\s+llamo\s+([a-zà-ÿ]+)",
+]
+
+MOTS_A_IGNORER = {
+    "salam", "salamou", "bonjour", "hello", "hola", "salut", "hi", "bghit",
+    "wash", "oui", "non", "ok", "merci", "thanks", "je", "suis", "moi",
+    "mon", "ma", "nom", "prenom", "prénom", "numero", "numéro", "tel",
+    "telephone", "téléphone", "est", "et", "le", "la", "voici", "voila",
+    "voilà", "ana", "smiti", "ismi", "appelez", "name", "voici",
+}
+
+def extraire_nom(texte):
+    if not texte:
+        return None
+    texte_lower = texte.lower()
+    for pat in NOM_INTRO_PATTERNS:
+        m = re.search(pat, texte_lower)
+        if m:
+            return " ".join(p.capitalize() for p in re.split(r"[\s-]", m.group(1)) if p)
+    sans_phone = re.sub(PHONE_WITH_SEPARATORS, " ", texte)
+    tokens = re.findall(r"[a-zA-ZÀ-ÿ]{2,}", sans_phone)
+    candidats = [t for t in tokens if t.lower() not in MOTS_A_IGNORER]
+    if candidats:
+        return " ".join(c.capitalize() for c in candidats[:2])
+    return None
+
 st.set_page_config(
     page_title="Edition Auto Luxury Cars",
     page_icon="🏎️",
@@ -232,9 +271,8 @@ if prompt := st.chat_input("Ecrivez votre message en francais, darija, English o
         st.markdown(reply)
 
     prompt_str = str(prompt) if prompt else ""
-    phone_pattern = r'(0[5-7][0-9]{8})'
     phone_digits_only = re.sub(r'[\s.\-]', '', prompt_str)
-    phone_found = re.search(phone_pattern, phone_digits_only)
+    phone_found = re.search(PHONE_PATTERN, phone_digits_only)
 
     if phone_found:
         telephone = phone_found.group()
@@ -259,19 +297,20 @@ if prompt := st.chat_input("Ecrivez votre message en francais, darija, English o
             if vehicule != "Non specifie":
                 break
 
-        mots_a_ignorer = {"salam", "bonjour", "hello", "hola", "salut", "hi", "bghit",
-                          "wash", "oui", "non", "ok", "merci", "thanks"}
-        nom = "Client Web"
-        for msg in st.session_state.messages:
-            if msg["role"] != "user":
-                continue
-            content = str(msg["content"]).strip()
-            if re.search(phone_pattern, re.sub(r'[\s.\-]', '', content)):
-                continue
-            mots = content.split()
-            if 1 <= len(mots) <= 3 and not any(m.lower().strip(",.!?") in mots_a_ignorer for m in mots):
-                nom = content
-                break
+        nom = extraire_nom(prompt_str)
+        if not nom:
+            for msg in st.session_state.messages:
+                if msg["role"] != "user":
+                    continue
+                content = str(msg["content"]).strip()
+                if re.search(PHONE_PATTERN, re.sub(r'[\s.\-]', '', content)):
+                    continue
+                nom_candidat = extraire_nom(content)
+                if nom_candidat:
+                    nom = nom_candidat
+                    break
+        if not nom:
+            nom = "Client Web"
 
         try:
             save_lead(nom, telephone, vehicule, prompt_str, langue)
