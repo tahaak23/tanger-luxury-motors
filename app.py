@@ -3,80 +3,30 @@ from anthropic import Anthropic
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
-from pathlib import Path
 import re
 
 client = Anthropic()
-
-SHEET_ID = "1EbuzvV8YoNqB-OvbWCaxlrMIlSQzWe31Ig5HTP76DpI"
-LOCAL_CREDS_PATH = Path(__file__).parent / "google-credentials.json"
 
 def connect_google_sheets():
     scope = [
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive"
     ]
-    if "gcp_service_account" in st.secrets:
-        creds = Credentials.from_service_account_info(
-            st.secrets["gcp_service_account"],
-            scopes=scope
-        )
-    elif LOCAL_CREDS_PATH.exists():
-        creds = Credentials.from_service_account_file(
-            str(LOCAL_CREDS_PATH),
-            scopes=scope
-        )
-    else:
-        raise FileNotFoundError(
-            "Aucune credential trouvée : configure st.secrets['gcp_service_account'] "
-            "ou place google-credentials.json à la racine."
-        )
+    creds = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=scope
+    )
     client_gs = gspread.authorize(creds)
-    return client_gs.open_by_key(SHEET_ID).sheet1
+    sheet = client_gs.open("Edition Auto-- Rendez-vous").sheet1
+    return sheet
 
 def save_lead(nom, telephone, vehicule, message, langue):
-    sheet = connect_google_sheets()
-    date = datetime.now().strftime("%d/%m/%Y %H:%M")
-    sheet.append_row([date, nom, telephone, vehicule, message, langue, "Nouveau"])
-
-PHONE_PATTERN = r'(0[5-7][0-9]{8})'
-PHONE_WITH_SEPARATORS = r"0[\s.\-]?[5-7](?:[\s.\-]?\d){8}"
-
-NOM_INTRO_PATTERNS = [
-    r"je\s+m['’]?appelle\s+([a-zà-ÿ]+(?:-[a-zà-ÿ]+)?)",
-    r"je\s+suis\s+([a-zà-ÿ]+(?:-[a-zà-ÿ]+)?)",
-    r"moi\s+c['’]?est\s+([a-zà-ÿ]+(?:-[a-zà-ÿ]+)?)",
-    r"mon\s+(?:prenom|prénom|nom)\s+(?:est|c['’]?est)\s+([a-zà-ÿ]+(?:-[a-zà-ÿ]+)?)",
-    r"appelez[- ]moi\s+([a-zà-ÿ]+)",
-    r"(?:ana\s+)?smiti\s+([a-zà-ÿ]+)",
-    r"(?:ana\s+)?ismi\s+([a-zà-ÿ]+)",
-    r"my\s+name\s+is\s+([a-zà-ÿ]+(?:\s+[a-zà-ÿ]+)?)",
-    r"i['’]?m\s+([a-zà-ÿ]+)",
-    r"me\s+llamo\s+([a-zà-ÿ]+)",
-]
-
-MOTS_A_IGNORER = {
-    "salam", "salamou", "bonjour", "hello", "hola", "salut", "hi", "bghit",
-    "wash", "oui", "non", "ok", "merci", "thanks", "je", "suis", "moi",
-    "mon", "ma", "nom", "prenom", "prénom", "numero", "numéro", "tel",
-    "telephone", "téléphone", "est", "et", "le", "la", "voici", "voila",
-    "voilà", "ana", "smiti", "ismi", "appelez", "name", "voici",
-}
-
-def extraire_nom(texte):
-    if not texte:
-        return None
-    texte_lower = texte.lower()
-    for pat in NOM_INTRO_PATTERNS:
-        m = re.search(pat, texte_lower)
-        if m:
-            return " ".join(p.capitalize() for p in re.split(r"[\s-]", m.group(1)) if p)
-    sans_phone = re.sub(PHONE_WITH_SEPARATORS, " ", texte)
-    tokens = re.findall(r"[a-zA-ZÀ-ÿ]{2,}", sans_phone)
-    candidats = [t for t in tokens if t.lower() not in MOTS_A_IGNORER]
-    if candidats:
-        return " ".join(c.capitalize() for c in candidats[:2])
-    return None
+    try:
+        sheet = connect_google_sheets()
+        date = datetime.now().strftime("%d/%m/%Y %H:%M")
+        sheet.append_row([date, nom, telephone, vehicule, message, langue, "Nouveau"])
+    except Exception as e:
+        print(f"Erreur Google Sheets: {e}")
 
 st.set_page_config(
     page_title="Edition Auto Luxury Cars",
@@ -223,7 +173,6 @@ SERVICES :
 
 COMPORTEMENT :
 - REGLE NUMERO 1 ABSOLUE : Si le client utilise UN SEUL mot darija comme bghit, salam, wash, 3andkom, chhal, kifach, nta, hna, daba, mzyan, wakha, kayn, aji, bzzaf, wach, ndir, nchof REPONDS UNIQUEMENT EN DARIJA. JAMAIS en francais. DARIJA SEULEMENT.
-- VOCABULAIRE DARIJA INTERDIT : Ne jamais utiliser le mot "lkhbar" ni "khbar" pour parler des informations d un vehicule. Utilise toujours "lma3loumat" ou "les informations" (code-switching accepte). Exemple correct : "lma3loumat dyalha" ou "les informations dyalha". Exemple INCORRECT : "lkhbar dyalha".
 - Si francais reponds en francais
 - Si anglais reponds en anglais
 - Si espagnol reponds en espagnol
@@ -238,6 +187,7 @@ COMPORTEMENT :
 - Apres avoir recu prenom et telephone dis : Parfait ! Notre equipe va vous contacter tres prochainement. Le vehicule vous attend au showroom Rue Fes N140, Tanger.
 - Pour inviter au showroom dis : Le vehicule est disponible dans notre showroom au Rue Fes N140, Tanger. Venez le decouvrir en personne !
 - Ne jamais demander si le client est disponible
+- VOCABULAIRE DARIJA INTERDIT : Ne jamais utiliser les mots "lkhbar", "khbar" ou "tchkila"
 """
 
 if "messages" not in st.session_state:
@@ -271,50 +221,39 @@ if prompt := st.chat_input("Ecrivez votre message en francais, darija, English o
     with st.chat_message("assistant"):
         st.markdown(reply)
 
-    prompt_str = str(prompt) if prompt else ""
-    phone_digits_only = re.sub(r'[\s.\-]', '', prompt_str)
-    phone_found = re.search(PHONE_PATTERN, phone_digits_only)
+    try:
+        prompt_str = str(prompt) if prompt else ""
+        phone_pattern = r'(0[5-7][0-9]{8})'
+        phone_found = re.search(phone_pattern, prompt_str)
 
-    if phone_found:
-        telephone = phone_found.group()
+        if phone_found:
+            telephone = phone_found.group()
 
-        prompt_lower = prompt_str.lower()
-        langue = "Francais"
-        if any(word in prompt_lower for word in ["salam", "wash", "bghit", "chhal", "kifach", "nta", "3andkom"]):
-            langue = "Darija"
-        elif any(word in prompt_lower for word in ["hello", "hi", "what", "how"]):
-            langue = "Anglais"
-        elif any(word in prompt_lower for word in ["hola", "que", "como"]):
-            langue = "Espagnol"
+            langue = "Francais"
+            if any(word in prompt_str.lower() for word in ["salam", "wash", "bghit", "chhal", "kifach", "nta", "3andkom"]):
+                langue = "Darija"
+            elif any(word in prompt_str.lower() for word in ["hello", "hi", "what", "how"]):
+                langue = "Anglais"
+            elif any(word in prompt_str.lower() for word in ["hola", "que", "como"]):
+                langue = "Espagnol"
 
-        vehicule = "Non specifie"
-        vehicules = ["BMW", "Mercedes", "Audi", "GLE", "GLC", "Q3", "Q8", "X5", "Yamaha", "G63"]
-        for msg in st.session_state.messages:
-            content_lower = str(msg["content"]).lower()
+            vehicule = "Non specifie"
+            vehicules = ["BMW", "Mercedes", "Audi", "GLE", "GLC", "Q3", "Q8", "X5", "Yamaha", "G63"]
             for v in vehicules:
-                if v.lower() in content_lower:
-                    vehicule = v
-                    break
-            if vehicule != "Non specifie":
-                break
+                for msg in st.session_state.messages:
+                    if v.lower() in str(msg["content"]).lower():
+                        vehicule = v
+                        break
 
-        nom = extraire_nom(prompt_str)
-        if not nom:
-            for msg in st.session_state.messages:
-                if msg["role"] != "user":
-                    continue
-                content = str(msg["content"]).strip()
-                if re.search(PHONE_PATTERN, re.sub(r'[\s.\-]', '', content)):
-                    continue
-                nom_candidat = extraire_nom(content)
-                if nom_candidat:
-                    nom = nom_candidat
-                    break
-        if not nom:
             nom = "Client Web"
+            for msg in st.session_state.messages:
+                if msg["role"] == "user":
+                    content = str(msg["content"])
+                    if len(content.split()) <= 3 and not re.search(phone_pattern, content):
+                        nom = content
+                        break
 
-        try:
             save_lead(nom, telephone, vehicule, prompt_str, langue)
-            st.toast("Vos coordonnées ont bien été enregistrées.", icon="✅")
-        except Exception as e:
-            st.error(f"Erreur sauvegarde Google Sheets : {e}")
+
+    except Exception as e:
+        print(f"Erreur sauvegarde: {e}")
